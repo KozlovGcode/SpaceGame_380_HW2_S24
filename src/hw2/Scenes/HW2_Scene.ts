@@ -78,6 +78,7 @@ export default class Homework1_Scene extends Scene {
 		/* ##### DO NOT MODIFY ##### */
 		// Load in the player spaceship spritesheet
 		this.load.spritesheet("player", "hw2_assets/spritesheets/player_spaceship.json");
+		this.load.spritesheet("fleet", "hw2_assets/spritesheets/space_ship.json")
 
 		// Load in the background image
 		this.load.image("space", "hw2_assets/sprites/space.png");
@@ -450,6 +451,7 @@ export default class Homework1_Scene extends Scene {
 						// Kill asteroid
 						asteroid.visible = false;
 						this.numAsteroids -= 1;
+						this.numAsteroidsDestroyed++;
 
 						// Update the gui
 						this.asteroidsLabel.text = `Asteroids: ${this.numAsteroids}`;
@@ -474,6 +476,14 @@ export default class Homework1_Scene extends Scene {
 				// If the asteroid is spawned in and it overlaps the player
 				if(asteroid.visible && Homework1_Scene.checkAABBtoCircleCollision(<AABB>this.player.collisionShape, <Circle>asteroid.collisionShape)){
 					// Put your code here:
+					asteroid.visible = false;
+					this.playerShield--;
+					this.playerinvincible = true;
+					this.numAsteroids--;
+					this.emitter.fireEvent(Homework2Event.PLAYER_DAMAGE, {shield: this.playerShield});
+					this.asteroidsLabel.text = `Asteroids: ${this.numAsteroids}`; 
+					this.shieldsLabel.text = `Shields: ${this.playerShield}`;
+					this.numAsteroidsDestroyed++;
 
 				}
 			}
@@ -503,6 +513,30 @@ export default class Homework1_Scene extends Scene {
 		}
 
 		if(asteroid !== null){
+			let random = Math.ceil(Math.random()*6)
+			switch(random)
+			{
+				case 1:
+					asteroid.color = Color.RED;
+					break;
+				case 2:
+					asteroid.color = Color.BLUE;
+					break;
+				case 3:
+					asteroid.color = Color.GREEN;
+					break;		
+				case 4:
+					asteroid.color = Color.ORANGE;
+					break;	
+				case 5:
+					asteroid.color = Color.MAGENTA;
+					break;
+				case 6:
+					asteroid.color = Color.CYAN;
+					break;		
+				
+			}
+
 			// Bring this asteroid to life
 			asteroid.visible = true;
 
@@ -568,8 +602,15 @@ export default class Homework1_Scene extends Scene {
 	 * @param paddedViewportSize The size of the viewport with padding
 	 */
 	handleScreenWrap(node: GameNode, viewportCenter: Vec2, paddedViewportSize: Vec2): void {
-		// Your code goes here:
 
+		if(node.position.x >= viewportCenter.x + paddedViewportSize.x/2)
+			node.positionX = viewportCenter.x - paddedViewportSize.x/2 + 1
+		if(node.position.y >= viewportCenter.y + paddedViewportSize.y/2)
+			node.positionY = viewportCenter.y - paddedViewportSize.y/2 + 1
+		if(node.position.x <= viewportCenter.x - paddedViewportSize.x/2)
+			node.positionX = viewportCenter.x + paddedViewportSize.x/2 + 1
+		if(node.position.y <= viewportCenter.y - paddedViewportSize.y/2)
+			node.positionY = viewportCenter.y + paddedViewportSize.y/2 + 1
 	}
 
 	// HOMEWORK 2 - TODO
@@ -598,8 +639,15 @@ export default class Homework1_Scene extends Scene {
 	 * @returns True if the two shapes overlap, false if they do not
 	 */
 	static checkAABBtoCircleCollision(aabb: AABB, circle: Circle): boolean {
-		// Your code goes here:
-		return false;
+		let close = new Vec2(Math.max(aabb.bottomLeft.x, Math.min(circle.center.x, aabb.topRight.x)) ,
+			Math.max(aabb.topLeft.y, Math.min(circle.center.y, aabb.bottomRight.y)))
+		let testDistance = Math.sqrt(Math.pow(close.x - circle.center.x, 2) + Math.pow(close.y - circle.center.y, 2))
+		if(testDistance > circle.radius){
+			console.log(aabb.toString())
+			console.log(circle.toString());
+			console.log(testDistance)
+		}
+		return testDistance < circle.radius;
 	}
 
 }

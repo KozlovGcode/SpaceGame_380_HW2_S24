@@ -67,11 +67,17 @@ export default class GradientCircleShaderType extends RectShaderType {
 		this.translation.translate(new Float32Array([translateX, translateY]));
 		this.scale.scale(size);
 		this.rotation.rotate(options.rotation);
+
 		let transformation = Mat4x4.MULT(this.translation, this.scale, this.rotation);
 
 		// Pass the translation matrix to our shader
 		const u_Transform = gl.getUniformLocation(program, "u_Transform");
 		gl.uniformMatrix4fv(u_Transform, false, transformation.toArray());
+
+		const color = options.color;
+
+		const u_Color = gl.getUniformLocation(program, "u_Color");
+		gl.uniform4f(u_Color, color.r,color.g, color.b, color.a);
 
 		// Draw the quad
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -86,7 +92,8 @@ export default class GradientCircleShaderType extends RectShaderType {
 		let options: Record<string, any> = {
 			position: gc.position,
 			size: gc.size,
-			rotation: gc.rotation
+			rotation: gc.rotation,
+			color: gc.color
 		}
 
 		return options;
